@@ -3,84 +3,65 @@
 import { Image } from '@astrojs/image/components';
 import image from "../icons/imor.png"
 import Icon from 'astro-icon'
-
-
-
 ---
 <div class="lg:bg-[linear-gradient(90deg,_white_70%,_pink_70%)]">
   <header class="relative flex max-w-screen-xl flex-col overflow-hidden px-4 py-4 text-blue-900 md:mx-auto md:flex-row md:items-center">
-    <a href="#" class="flex cursor-pointer items-center whitespace-nowrap text-2xl font-black">
-      <span class="mr-2 text-4xl text-[#ffc0cb]">
+    <a href="#" class="flex cursor-pointer items-center whitespace-nowrap text-2xl font-black ">
+      <span class="mr-2 text-4xl ">
         <Icon name="logo" class="w-16 h-16 text-black bg-[#ffc0cb] rounded-full" />
-  
       </span>
-Pet Parenting
+      Pet Parenting
     </a>
     <input type="checkbox" class="peer hidden" id="navbar-open" />
     <label class="absolute top-5 right-7 cursor-pointer md:hidden" for="navbar-open">
       <span class="sr-only">Toggle Navigation</span>
-        <Icon name="ic:baseline-menu" class="w-6 h-6 text-black" />
-  
+      <Icon name="ic:baseline-menu" class="w-6 h-6 text-black" />
     </label>
     <nav aria-label="Header Navigation" class="flex max-h-0 w-full flex-col items-center justify-between overflow-hidden transition-all peer-checked:mt-8 peer-checked:max-h-56 md:ml-24 md:max-h-full md:flex-row md:items-start">
       <ul class="flex flex-col items-center space-y-2 md:ml-auto md:flex-row md:space-y-0">
         <li class="font-bold md:mr-12"><a href="#">Pricing</a></li>
         <li class="md:mr-12"><a href="#">Features</a></li>
         <li class="md:mr-12"><a href="#">Support</a></li>
-    
       </ul>
     </nav>
   </header>
 
-  <div class="mx-auto mt-10 px-4 sm:max-w-xl md:max-w-full md:px-10 lg:max-w-screen-xl lg:px-8">
-    <div class="flex flex-col items-center justify-between lg:flex-row">
-      <div class="lg:max-w-lg lg:pr-5 ">
-        <div class="max-w-xl">
-          <h2 class="mb-6 max-w-lg text-3xl leading-snug tracking-tight  sm:text-5xl sm:leading-snug">
-            <span class="my-1 inline-block font-serif font-bold text-[#ffc0cb]">
-                Pet Parenting
-            </span>
-            of the future
-          </h2>
-          <p class="text-base text-gray-700">
-            Learn the essentials of pet parenting and provide the best care for your furry friends.
-          </p>
-          <div class="mt-8 sm:flex space-y-3 sm:space-y-0 sm:space-x-3">
-            <div class="relative overflow-hidden rounded-xl border-4 border-[#ffc0cb] bg-white shadow">
-              <div class="py-10 px-6">
-                <div class="flex items-center">
-                  <h3 class="relative ml-2 inline-block text-4xl font-bold leading-none">328</h3>
-                  <span class="ml-3 text-base font-medium capitalize">Pet Parenting Achievements</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="relative overflow-hidden rounded-xl border-4 border-[#ffc0cb] bg-white shadow">
-              <div class="py-10 px-6">
-                <div class="flex items-center">
-                  <h3 class="relative ml-2 inline-block text-4xl font-bold leading-none">16</h3>
-                  <span class="ml-3 text-base font-medium capitalize">Pet Parenting Graduations sponsored</span>
-                </div>
-              </div>
-            </div>
-          </div>
+<div class="mx-auto mt-10 px-4 sm:max-w-xl md:max-w-full md:px-10 lg:max-w-screen-xl lg:px-8">
+  <div class="flex flex-col items-center justify-between lg:flex-row">
+    <div class="lg:max-w-lg lg:pr-5">
+      <div class="max-w-xl">
+        <h2 class="mb-6 max-w-lg text-3xl leading-snug tracking-tight sm:text-5xl sm:leading-snug">
+          <span class="my-1 inline-block font-serif font-bold text-[#ffc0cb]">
+            Pet Parenting
+          </span>
+          101
+        </h2>
+        <p class="text-base text-gray-700">
+          Welcome to Pet Parenting 101, your ultimate guide to becoming a responsible and caring pet parent. Learn how to provide the best care, nutrition, training, and well-being for your furry friends.
+        </p>
+     
+        <div class="flex justify-center mt-8 space-x-4">
+          <a href="#" class="px-7 py-3 text-lg font-medium shadow-xl bg-[#ffc0cb] rounded-xl">See the Blog</a>
+          <a href="#" class="px-12  py-3 text-lg font-medium  bg-white border border-[#ffc0cb] rounded-md shadow-xl">Search</a>
         </div>
       </div>
-      <div class="relative text-blue-600 lg:ml-32 lg:w-1/2  lg:block">
-        <div class=" max-w-lg mx-auto mb-10">
-        	<Image 
-						class="w-full h-auto rounded-lg shadow-2xl  lg:w-full lg:h-full"
-						src={
-                            image
-                        }
-						alt="Hero"
-						width={500}
-                        height={500}
-					/>
-        </div>
+    </div>
+    <div class="relative text-blue-600 lg:ml-32 lg:w-1/2 lg:block">
+      <div class="max-w-lg mx-auto mb-10">
+        <Image 
+          class="w-full h-auto rounded-lg shadow-2xl lg:w-full lg:h-full"
+          src={image}
+          alt="Hero"
+          width={500}
+          height={500}
+        />
       </div>
     </div>
   </div>
 </div>
+
+</div>
+
+
 
 
