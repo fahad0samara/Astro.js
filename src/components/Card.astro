@@ -30,25 +30,32 @@ import Icon from 'astro-icon'
   <div class="flex flex-col items-center justify-between lg:flex-row">
     <div class="lg:max-w-lg lg:pr-5">
       <div class="max-w-xl">
+            <Icon
+            name="hero"
+            class="w-32 h-32 text-[#ffc0cb]  "
+            />
         <h2 class="mb-6 max-w-lg text-3xl leading-snug tracking-tight sm:text-5xl sm:leading-snug">
+            
           <span class="my-1 inline-block font-serif font-bold text-[#ffc0cb]">
             Pet Parenting
           </span>
-          101
+        
         </h2>
-        <p class="text-base text-gray-700">
+     
+        <p class="  italic text-xl">
           Welcome to Pet Parenting 101, your ultimate guide to becoming a responsible and caring pet parent. Learn how to provide the best care, nutrition, training, and well-being for your furry friends.
         </p>
      
-        <div class="flex justify-center mt-8 space-x-4">
-          <a href="#" class="px-7 py-3 text-lg font-medium shadow-xl bg-[#ffc0cb] rounded-xl">See the Blog</a>
+        <div class="lg:flex justify-center mt-8 space-x-4 hidden relative">
+          <a href="/get" class="px-7 py-3 text-lg font-medium shadow-xl bg-[#ffc0cb] rounded-xl">See the Blog</a>
          
-          <a href="#" class="px-12  py-3 text-lg font-medium  bg-white border border-[#ffc0cb] rounded-md shadow-xl">Search</a>
-           <Icon
-            name="free"
-            class="w-80 h-80 -bottom-9 text-[#ffc0cb] absolute "
-            />
+          <a href="/search" class="px-12 hover:bg  py-3 text-lg font-medium  bg-white border border-[#ffc0cb] rounded-md shadow-xl">Search</a>
+           
         </div>
+        <Icon
+            name="free"
+            class="w-80 h-80 -mt-20  ml-12 text-[#ffc0cb]  hidden lg:flex"
+            />
       </div>
     </div>
     <div class="relative text-blue-600 lg:ml-32 lg:w-1/2 lg:block">
@@ -59,9 +66,17 @@ import Icon from 'astro-icon'
           alt="Hero"
           width={500}
           height={500}
+          format={'webp'}
         />
+
       </div>
     </div>
+       <div class="lg:hidden justify-center mt-8 space-x-4 flex relative">
+          <a href="/get" class="px-7 py-3 text-lg font-medium shadow-xl bg-[#ffc0cb] rounded-xl">See the Blog</a>
+         
+          <a href="/search" class="px-12  py-3 text-lg font-medium  bg-white border border-[#ffc0cb] rounded-md shadow-xl hover:bg-black">Search</a>
+       
+        </div>
   </div>
 </div>
 
