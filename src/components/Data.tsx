@@ -92,34 +92,36 @@
 // });
 
 // export default CatsList;
-
-import {useState, useEffect} from "preact/hooks";
-
-
+import {useState, useEffect} from "preact/compat";
 
 const CatList = () => {
   const [cats, setCats] = useState([]);
   const [language, setLanguage] = useState("en");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(8);
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
     fetchCats();
-  }, []);
+  }, [page, perPage]);
 
   const fetchCats = async () => {
     try {
-      const response = await fetch("http://localhost:1995/cat/api/cats");
+      const response = await fetch(
+        `http://localhost:1995/cat/api/cats?page=${page}&perPage=${perPage}`
+      );
+
       if (!response.ok) {
         throw new Error("Failed to fetch cats");
       }
+
       const data = await response.json();
       setCats(data.cats);
+      setTotalPages(data.totalPages);
       setLoading(false);
     } catch (error) {
       console.error("Failed to fetch cats:", error);
-      setError(error.message);
-      setLoading(false);
     }
   };
 
@@ -127,42 +129,112 @@ const CatList = () => {
     setLanguage(prevLanguage => (prevLanguage === "en" ? "ar" : "en"));
   };
 
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(prevPage => prevPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (page < totalPages) {
+      setPage(prevPage => prevPage + 1);
+    }
+  };
+
   if (loading) {
     return <p>Loading cats...</p>;
-  }
-
-  if (error) {
-    return <p>Error: {error}</p>;
-  }
-
-  if (cats.length === 0) {
-    return <p>No cats available.</p>;
   }
 
   const catArray = Array.isArray(cats) ? cats : [cats];
 
   return (
-    <div>
-      <button onClick={handleLanguageToggle}>
-        {language === "en" ? "Switch to Arabic" : "Switch to English"}
+    <div className="container mx-auto p-4">
+      <button
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4"
+        onClick={handleLanguageToggle}
+      >
+        {language === "en" ? "عربي" : "Switch to English"}
       </button>
-      <h1>Cats</h1>
-      {catArray.map(cat => {
-        const translation =
-          cat.translations.filter(t => t.language === language)[0] || null;
+      <h1 className="text-2xl font-bold mb-4">Cats</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {catArray.map(cat => {
+          const translation = cat.translations.find(
+            t => t.language === language
+          );
 
-        return (
-          <div key={cat._id}>
-            <h2>{translation?.name}</h2>
-            <p>Breed: {translation?.breed || "N/A"}</p>
-            <p>Description: {translation?.description || "N/A"}</p>
-            <img src={cat.image} alt="Cat" />
-          </div>
-        );
-      })}
+          return (
+            <div key={cat._id} className="bg-white rounded-lg shadow-md">
+              <a href="#">
+                <img
+                  className="h-60 w-full object-cover rounded-t-lg"
+                  src={cat.image}
+                  alt="Cat"
+                />
+              </a>
+              <div className="p-5">
+                <a href="#">
+                  <h5 className="text-xl font-semibold text-slate-900">
+                    {translation?.name}
+                  </h5>
+                </a>
+                <div className="mt-2.5 mb-5 flex items-center">
+                  <span className="mr-2 rounded bg-yellow-200 px-2.5 py-0.5 text-xs font-semibold">
+                    {translation?.breed || "N/A"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p>{translation?.description || "N/A"}</p>
+                  <a
+                    href="#"
+                    className="flex items-center rounded-md bg-slate-900 px-5 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-blue-300"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="mr-2 h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    </svg>
+                    Add to cart
+                  </a>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex justify-center mt-4">
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
+          onClick={handlePrevPage}
+          disabled={page === 1}
+        >
+          Previous Page
+        </button>
+        <span className="text-gray-500">
+          Page {page} of {totalPages}
+        </span>
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={handleNextPage}
+          disabled={page === totalPages}
+        >
+          Next Page
+        </button>
+      </div>
     </div>
   );
 };
 
 export default CatList;
+
+
+
 
