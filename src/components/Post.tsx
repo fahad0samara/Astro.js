@@ -119,13 +119,13 @@
 //         Name (Arabic):
 //         <input
 //           type="text"
-//           value={nameAr}
-//           onChange={e => setNameAr(e.target.value)}
-//           onBlur={e => validateArabicInput("nameAr", e.target.value)}
+//           value={arabicName}
+//           onChange={e => setarabicName(e.target.value)}
+//           onBlur={e => validateArabicInput("arabicName", e.target.value)}
 //           className="border border-gray-300 rounded px-3 py-2 mt-1 w-full"
 //         />
-//         {errors.nameAr && (
-//           <p className="text-red-500 text-sm">{errors.nameAr}</p>
+//         {errors.arabicName && (
+//           <p className="text-red-500 text-sm">{errors.arabicName}</p>
 //         )}
 //       </label>
 //       <label className="block mb-2">
@@ -244,7 +244,40 @@ const CreateCat = () => {
   const [englishName, setEnglishName] = useState("");
   const [englishBreed, setEnglishBreed] = useState("");
   const [englishDescription, setEnglishDescription] = useState("");
+    const [errors, setErrors] = useState({});
+  const validateEnglishInput = (field, value) => {
+    const englishRegex = /^[A-Za-z\s]+$/; // Regular expression to match English characters and spaces
+    if (!value) {
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        [field]: "This field cannot be empty.",
+      }));
+    } else if (!englishRegex.test(value)) {
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        [field]: "Only English characters are allowed.",
+      }));
+    } else {
+      setErrors(prevErrors => ({...prevErrors, [field]: ""}));
+    }
+  };
 
+  const validateArabicInput = (field, value) => {
+    const arabicRegex = /^[\u0600-\u06FF\s]+$/; // Regular expression to match Arabic characters and spaces
+    if (!value) {
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        [field]: "This field cannot be empty.",
+      }));
+    } else if (!arabicRegex.test(value)) {
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        [field]: "Only Arabic characters are allowed.",
+      }));
+    } else {
+      setErrors(prevErrors => ({...prevErrors, [field]: ""}));
+    }
+  };
   const handleImageUpload = event => {
     const file = event.target.files[0];
     setImage(file);
@@ -252,6 +285,22 @@ const CreateCat = () => {
 
 const handleSubmit = async event => {
   event.preventDefault();
+
+  // Validation for English fields
+  validateEnglishInput("englishName", englishName);
+  validateEnglishInput("englishName", englishName);
+  validateEnglishInput("englishDescription", englishDescription);
+
+  // Validation for Arabic fields
+  validateArabicInput("arabicName", arabicName);
+  validateArabicInput("arabicBreed", arabicBreed);
+  validateArabicInput("arabicDescription", arabicDescription);
+
+  // Check if there are any errors
+  const hasErrors = Object.values(errors).some(error => error !== "");
+  if (hasErrors) {
+    return;
+  }
 
   try {
     const formData = new FormData();
@@ -280,8 +329,6 @@ const handleSubmit = async event => {
       body: formData,
     });
 
-  
-
     const data = await response.json();
 
     // Reset the form fields
@@ -294,9 +341,9 @@ const handleSubmit = async event => {
     setEnglishName("");
     setEnglishBreed("");
     setEnglishDescription("");
-    console.log('====================================');
+    console.log("====================================");
     console.log("Cat created successfully:", data);
-    console.log('====================================');
+    console.log("====================================");
   } catch (error) {
     console.error("Failed to create cat:", error);
   }
@@ -343,7 +390,11 @@ const handleSubmit = async event => {
               id="arabicName"
               value={arabicName}
               onChange={e => setArabicName(e.target.value)}
+              onBlur={e => validateArabicInput("arabicName", e.target.value)}
             />
+            {errors.arabicName && (
+              <p className="text-red-500 text-sm">{errors.arabicName}</p>
+            )}
           </div>
           <div>
             <label htmlFor="arabicBreed">Breed:</label>
@@ -352,7 +403,11 @@ const handleSubmit = async event => {
               id="arabicBreed"
               value={arabicBreed}
               onChange={e => setArabicBreed(e.target.value)}
+              onBlur={e => validateArabicInput("arabicBreed", e.target.value)}
             />
+            {errors.arabicBreed && (
+              <p className="text-red-500 text-sm">{errors.arabicBreed}</p>
+            )}
           </div>
           <div>
             <label htmlFor="arabicDescription">Description:</label>
@@ -360,7 +415,13 @@ const handleSubmit = async event => {
               id="arabicDescription"
               value={arabicDescription}
               onChange={e => setArabicDescription(e.target.value)}
+              onBlur={e =>
+                validateArabicInput("arabicDescription", e.target.value)
+              }
             />
+            {errors.arabicDescription && (
+              <p className="text-red-500 text-sm">{errors.arabicDescription}</p>
+            )}
           </div>
         </div>
         <div>
@@ -372,7 +433,11 @@ const handleSubmit = async event => {
               id="englishName"
               value={englishName}
               onChange={e => setEnglishName(e.target.value)}
+              onBlur={e => validateEnglishInput("englishName", e.target.value)}
             />
+            {errors.englishName && (
+              <p className="text-red-500 text-sm">{errors.englishName}</p>
+            )}
           </div>
           <div>
             <label htmlFor="englishBreed">Breed:</label>
@@ -381,7 +446,11 @@ const handleSubmit = async event => {
               id="englishBreed"
               value={englishBreed}
               onChange={e => setEnglishBreed(e.target.value)}
+              onBlur={e => validateEnglishInput("englishBreed", e.target.value)}
             />
+            {errors.englishBreed && (
+              <p className="text-red-500 text-sm">{errors.englishBreed}</p>
+            )}
           </div>
           <div>
             <label htmlFor="englishDescription">Description:</label>
@@ -389,7 +458,15 @@ const handleSubmit = async event => {
               id="englishDescription"
               value={englishDescription}
               onChange={e => setEnglishDescription(e.target.value)}
+              onBlur={e =>
+                validateEnglishInput("englishDescription", e.target.value)
+              }
             />
+            {errors.englishDescription && (
+              <p className="text-red-500 text-sm">
+                {errors.englishDescription}
+              </p>
+            )}
           </div>
         </div>
         <button type="submit">Create Cat</button>
