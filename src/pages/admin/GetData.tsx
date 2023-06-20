@@ -1,3 +1,6 @@
+
+
+// export default GetData
 import {useState, useEffect} from "preact/compat";
 const GetData = () => {
   const [cats, setCats] = useState([]);
@@ -18,18 +21,62 @@ const GetData = () => {
         language: "ar",
         name: "",
         breed: "",
-        image: "",
+     
       },
       {
         language: "en",
         name: "",
         breed: "",
-        image: "",
+       
       },
     ],
   });
 
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [nameError, setNameError] = useState(false);
+  const [breedError, setBreedError] = useState(false);
+  const [descriptionError, setDescriptionError] = useState(false);
+const [errors, setErrors] = useState({
+  nameEn: "",
+  breedEn: "",
+  nameAr: "",
+  breedAr: "",
+});
+
+const validateArabicInput = (field, value) => {
+  const arabicRegex = /^[\u0600-\u06FF\s]+$/; // Regular expression to match Arabic characters and spaces
+  if (!value) {
+    setErrors(prevErrors => ({
+      ...prevErrors,
+      [field]: "This field cannot be empty.",
+    }));
+  } else if (!arabicRegex.test(value)) {
+    setErrors(prevErrors => ({
+      ...prevErrors,
+      [field]: "Only Arabic characters are allowed.",
+    }));
+  } else {
+    setErrors(prevErrors => ({...prevErrors, [field]: ""}));
+  }
+};
+
+const validateEnglishInput = (field, value) => {
+  const englishRegex = /^[A-Za-z\s]+$/; // Regular expression to match English characters and spaces
+  if (!value) {
+    setErrors(prevErrors => ({
+      ...prevErrors,
+      [field]: "This field cannot be empty.",
+    }));
+  } else if (!englishRegex.test(value)) {
+    setErrors(prevErrors => ({
+      ...prevErrors,
+      [field]: "Only English characters are allowed.",
+    }));
+  } else {
+    setErrors(prevErrors => ({...prevErrors, [field]: ""}));
+  }
+};
+
 
   useEffect(() => {
     fetchCats();
@@ -91,7 +138,9 @@ const GetData = () => {
   };
 
   const handleUpdateCat = async catId => {
-    setUpdatingCatId(catId);
+    setUpdatingCatId(catId)
+
+
     const catToUpdate = cats.find(cat => cat._id === catId);
     if (catToUpdate) {
       setUpdatedCatData({
@@ -116,43 +165,58 @@ const GetData = () => {
     setShowUpdateModal(true);
   };
 
-  const submitUpdateCat = async event => {
-    event.preventDefault();
+const submitUpdateCat = async event => {
+  event.preventDefault();
+  
 
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `http://localhost:1995/cat/api/cats/${updatedCatData._id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...updatedCatData,
-            translations: JSON.stringify(updatedCatData.translations),
-          }),
-        }
-      );
+
+  try {
+    setLoading(true);
+    const formData = new FormData();
+    formData.append("image", imageFile);
+    formData.append("_id", updatedCatData._id);
+    formData.append(
+      "translations",
+      JSON.stringify(updatedCatData.translations)
+    );
+
+    const response = await fetch(
+      `http://localhost:1995/cat/api/cats/${updatedCatData._id}`,
+      {
+        method: "PUT",
+        body: formData,
+      }
+    );
+
+    if (response.ok) {
+      const updatedCat = await response.json();
+      setUpdatedCatData(prevData => ({
+        ...prevData,
+        image: updatedCat.cat.image, // Update the image URL
+      }));
 
       setCats(prevCats =>
         prevCats.map(cat =>
           cat._id === updatedCatData._id
             ? {
                 ...cat,
-                image: updatedCatData.image,
+                image: updatedCat.cat.image,
                 translations: updatedCatData.translations,
               }
             : cat
         )
       );
-    } catch (error) {
-      console.log("Failed to update cat:", error);
-    } finally {
-      setShowUpdateModal(false);
-      setLoading(false);
+    } else {
+      console.log("Failed to update cat:", response.statusText);
     }
-  };
+  } catch (error) {
+    console.log("Failed to update cat:", error);
+  } finally {
+    setShowUpdateModal(false);
+    setLoading(false);
+  }
+};
+
 
   const handleUpdateInputChange = event => {
     const {name, value, dataset} = event.target;
@@ -166,7 +230,19 @@ const GetData = () => {
           : translation
       ),
     }));
+
+
+
   };
+
+
+   const [imageFile, setImageFile] = useState(null);
+const handleUpdateImageChange = event => {
+  const file = event.target.files[0];
+  setImageFile(file);
+};
+   
+    
 
   const catArray = Array.isArray(cats) ? cats : [cats];
 
@@ -335,59 +411,79 @@ const GetData = () => {
                   Update Cat
                 </h2>
                 <form onSubmit={submitUpdateCat}>
-                  <div className="mb-4">
-                    <label htmlFor="name" className="block text-gray-700">
-                      Name (Arabic):
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={updatedCatData.translations[0].name}
-                      onChange={handleUpdateInputChange}
-                      data-language="ar"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    />
+                  <div className="mb-4 flex flex-col sm:flex-row sm:justify-between">
+                    <div className="mb-4">
+                      <label htmlFor="name" className="block text-gray-700">
+                        Name (Arabic):
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={updatedCatData.translations[0].name}
+                        onChange={handleUpdateInputChange}
+                        data-language="ar"
+                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500 ${
+                          nameError ? "border-red-500" : ""
+                        }`}
+                      />
+                   
+                    </div>
+                    <div>
+                      <label htmlFor="breed" className="block text-gray-700">
+                        Breed (Arabic):
+                      </label>
+                      <input
+                        type="text"
+                        name="breed"
+                        value={updatedCatData.translations[0].breed}
+                        onChange={handleUpdateInputChange}
+                        data-language="ar"
+                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500 ${
+                          breedError ? "border-red-500" : ""
+                        }`}
+                      />
+                  
+                    </div>
+                  
                   </div>
 
-                  <div className="mb-4">
-                    <label htmlFor="breed" className="block text-gray-700">
-                      Breed (Arabic):
-                    </label>
-                    <input
-                      type="text"
-                      name="breed"
-                      value={updatedCatData.translations[0].breed}
-                      onChange={handleUpdateInputChange}
-                      data-language="ar"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    />
+                  <div className="flex flex-col sm:flex-row sm:justify-between mb-4">
+                    <div className="w-full sm:w-1/2 pr-0 sm:pr-2">
+                      <label htmlFor="name" className="block text-gray-700">
+                        Name (English):
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={updatedCatData.translations[1].name}
+                        onChange={handleUpdateInputChange}
+                        data-language="en"
+                        className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                      />
+                    </div>
+
+                    <div className="w-full sm:w-1/2 pl-0 sm:pl-2 mt-4 sm:mt-0">
+                      <label htmlFor="breed" className="block text-gray-700">
+                        Breed (English):
+                      </label>
+                      <input
+                        type="text"
+                        name="breed"
+                        value={updatedCatData.translations[1].breed}
+                        onChange={handleUpdateInputChange}
+                        data-language="en"
+                        className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                      />
+                    </div>
                   </div>
 
-                  <div className="mb-4">
-                    <label htmlFor="name" className="block text-gray-700">
-                      Name (English):
-                    </label>
+                  <div>
+                    <label htmlFor="image">Image:</label>
                     <input
-                      type="text"
-                      name="name"
-                      value={updatedCatData.translations[1].name}
-                      onChange={handleUpdateInputChange}
-                      data-language="en"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    />
-                  </div>
-
-                  <div className="mb-4">
-                    <label htmlFor="breed" className="block text-gray-700">
-                      Breed (English):
-                    </label>
-                    <input
-                      type="text"
-                      name="breed"
-                      value={updatedCatData.translations[1].breed}
-                      onChange={handleUpdateInputChange}
-                      data-language="en"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      type="file"
+                      id="image"
+                      accept="image/*"
+                      onChange={handleUpdateImageChange}
                     />
                   </div>
 
@@ -401,7 +497,7 @@ const GetData = () => {
                     <button
                       onClick={() => setShowUpdateModal(false)}
                       type="button"
-                      className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-gray-700 bg-gray-300 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 ml-2"
+                      className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-gray-700 bg-gray-300 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 mt-2 sm:mt-0"
                     >
                       Cancel
                     </button>
