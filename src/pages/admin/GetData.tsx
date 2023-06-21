@@ -4,6 +4,7 @@
 import {useState, useEffect} from "preact/compat";
 const GetData = () => {
   const [cats, setCats] = useState([]);
+  
   const [language, setLanguage] = useState("en");
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -11,7 +12,7 @@ const GetData = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [deletingCatId, setDeletingCatId] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [updatingCatId, setUpdatingCatId] = useState("");
+ 
   const [updatedCatData, setUpdatedCatData] = useState({
     _id: "",
 
@@ -33,15 +34,15 @@ const GetData = () => {
   });
 
   const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [nameError, setNameError] = useState(false);
-  const [breedError, setBreedError] = useState(false);
-  const [descriptionError, setDescriptionError] = useState(false);
+
+
 const [errors, setErrors] = useState({
   nameEn: "",
   breedEn: "",
   nameAr: "",
   breedAr: "",
 });
+const [hasErrors, setHasErrors] = useState(false);
 
 const validateArabicInput = (field, value) => {
   const arabicRegex = /^[\u0600-\u06FF\s]+$/; // Regular expression to match Arabic characters and spaces
@@ -50,14 +51,18 @@ const validateArabicInput = (field, value) => {
       ...prevErrors,
       [field]: "This field cannot be empty.",
     }));
+       setHasErrors(true);
   } else if (!arabicRegex.test(value)) {
     setErrors(prevErrors => ({
       ...prevErrors,
       [field]: "Only Arabic characters are allowed.",
     }));
+       setHasErrors(true);
   } else {
-    setErrors(prevErrors => ({...prevErrors, [field]: ""}));
+    setErrors(prevErrors => ({ ...prevErrors, [field]: "" }));
+       setHasErrors(false);
   }
+
 };
 
 const validateEnglishInput = (field, value) => {
@@ -67,14 +72,18 @@ const validateEnglishInput = (field, value) => {
       ...prevErrors,
       [field]: "This field cannot be empty.",
     }));
+       setHasErrors(true);
   } else if (!englishRegex.test(value)) {
     setErrors(prevErrors => ({
       ...prevErrors,
       [field]: "Only English characters are allowed.",
     }));
+       setHasErrors(true);
   } else {
-    setErrors(prevErrors => ({...prevErrors, [field]: ""}));
+    setErrors(prevErrors => ({ ...prevErrors, [field]: "" }));
+    setHasErrors(false);
   }
+  
 };
 
 
@@ -138,7 +147,7 @@ const validateEnglishInput = (field, value) => {
   };
 
   const handleUpdateCat = async catId => {
-    setUpdatingCatId(catId)
+
 
 
     const catToUpdate = cats.find(cat => cat._id === catId);
@@ -165,10 +174,33 @@ const validateEnglishInput = (field, value) => {
     setShowUpdateModal(true);
   };
 
+    const handleBlur = (field, value) => {
+      if (field === "nameEn") {
+        validateEnglishInput(field, value);
+      } else if (field === "breedEn") {
+        validateEnglishInput(field, value);
+      } else if (field === "nameAr") {
+        validateArabicInput(field, value);
+      } else if (field === "breedAr") {
+        validateArabicInput(field, value);
+      }
+    };
+
 const submitUpdateCat = async event => {
   event.preventDefault();
-  
 
+  // Validate the input fields
+  validateArabicInput("nameAr", updatedCatData.translations[0].name);
+  validateEnglishInput("nameEn", updatedCatData.translations[1].name);
+  validateArabicInput("breedAr", updatedCatData.translations[0].breed);
+  validateEnglishInput("breedEn", updatedCatData.translations[1].breed);
+
+  // Check if there are any errors
+  const hasErrors = Object.values(errors).some(error => error !== "");
+  if (hasErrors) {
+    return; // Don't submit if there are errors
+  }
+ 
 
   try {
     setLoading(true);
@@ -218,31 +250,74 @@ const submitUpdateCat = async event => {
 };
 
 
-  const handleUpdateInputChange = event => {
-    const {name, value, dataset} = event.target;
-    const language = dataset.language;
+ const handleUpdateInputChange = event => {
+   const {name, value, dataset} = event.target;
+   const language = dataset.language;
 
-    setUpdatedCatData(prevData => ({
-      ...prevData,
-      translations: prevData.translations.map(translation =>
-        translation.language === language
-          ? {...translation, [name]: value}
-          : translation
-      ),
-    }));
+   if (language === "ar") {
+     validateArabicInput(name, value);
+   } else if (language === "en") {
+     validateEnglishInput(name, value);
+   }
 
-
-
-  };
+   setUpdatedCatData(prevData => ({
+     ...prevData,
+     translations: prevData.translations.map(translation =>
+       translation.language === language
+         ? {...translation, [name]: value}
+         : translation
+     ),
+   }));
+ };
 
 
    const [imageFile, setImageFile] = useState(null);
-const handleUpdateImageChange = event => {
-  const file = event.target.files[0];
-  setImageFile(file);
-};
+  const [imagePreview, setImagePreview] = useState(null);
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setImageFile(file);
+      };
+      reader.readAsDataURL(file);
+
+    } else {
+      setImagePreview(null);
+      setImageFile(null);
+    }
+  };
    
-    
+    const handleUpdateModalClose = () => {
+  
+      setUpdatedCatData({
+        _id: "",
+        image: "",
+        translations: [
+          {
+            language: "ar",
+            name: "",
+            breed: "",
+          },
+          {
+            language: "en",
+            name: "",
+            breed: "",
+          },
+        ],
+      });
+      setShowUpdateModal(false);
+      setErrors({
+        nameEn: "",
+        breedEn: "",
+        nameAr: "",
+        breedAr: "",
+      });
+    };
+
 
   const catArray = Array.isArray(cats) ? cats : [cats];
 
@@ -261,6 +336,8 @@ const handleUpdateImageChange = event => {
   if (loading) {
     return <p>Loading cats...</p>;
   }
+
+ 
 
   return (
     <div>
@@ -389,7 +466,7 @@ const handleUpdateImageChange = event => {
       </div>
 
       {showUpdateModal && (
-        <div className="fixed z-10 inset-0 overflow-y-auto">
+        <div className="fixed z-10 inset-0 overflow-y-auto ">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             <div
               className="fixed inset-0 transition-opacity"
@@ -405,14 +482,14 @@ const handleUpdateImageChange = event => {
               &#8203;
             </span>
 
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="inline-block align-bottom   rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <h2 className="text-lg font-medium text-gray-900 mb-4">
                   Update Cat
                 </h2>
                 <form onSubmit={submitUpdateCat}>
                   <div className="mb-4 flex flex-col sm:flex-row sm:justify-between">
-                    <div className="mb-4">
+                    <div className="mb-4 ">
                       <label htmlFor="name" className="block text-gray-700">
                         Name (Arabic):
                       </label>
@@ -422,13 +499,19 @@ const handleUpdateImageChange = event => {
                         value={updatedCatData.translations[0].name}
                         onChange={handleUpdateInputChange}
                         data-language="ar"
-                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500 ${
-                          nameError ? "border-red-500" : ""
-                        }`}
+                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                          errors.nameAr ? "border-red-500" : "border-gray-200"
+                        } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+                        onBlur={e => handleBlur("nameAr", e.target.value)}
                       />
-                   
+                      {errors.nameAr && (
+                        <span className="text-red-500 text-xs italic">
+                          {errors.nameAr}
+                        </span>
+                      )}
                     </div>
                     <div>
+                      <div></div>
                       <label htmlFor="breed" className="block text-gray-700">
                         Breed (Arabic):
                       </label>
@@ -438,13 +521,17 @@ const handleUpdateImageChange = event => {
                         value={updatedCatData.translations[0].breed}
                         onChange={handleUpdateInputChange}
                         data-language="ar"
-                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500 ${
-                          breedError ? "border-red-500" : ""
-                        }`}
+                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                          errors.breedAr ? "border-red-500" : "border-gray-200"
+                        } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+                        onBlur={e => handleBlur("breedAr", e.target.value)}
                       />
-                  
+                      {errors.breedAr && (
+                        <span className="text-red-500 text-xs italic">
+                          {errors.breedAr}
+                        </span>
+                      )}
                     </div>
-                  
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:justify-between mb-4">
@@ -458,8 +545,16 @@ const handleUpdateImageChange = event => {
                         value={updatedCatData.translations[1].name}
                         onChange={handleUpdateInputChange}
                         data-language="en"
-                        className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                          errors.nameEn ? "border-red-500" : "border-gray-200"
+                        } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+                        onBlur={e => handleBlur("nameEn", e.target.value)}
                       />
+                      {errors.nameEn && (
+                        <span className="text-red-500 text-xs italic">
+                          {errors.nameEn}
+                        </span>
+                      )}
                     </div>
 
                     <div className="w-full sm:w-1/2 pl-0 sm:pl-2 mt-4 sm:mt-0">
@@ -472,30 +567,73 @@ const handleUpdateImageChange = event => {
                         value={updatedCatData.translations[1].breed}
                         onChange={handleUpdateInputChange}
                         data-language="en"
-                        className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                          errors.breedEn ? "border-red-500" : "border-gray-200"
+                        } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+                        onBlur={e => handleBlur("breedEn", e.target.value)}
                       />
+                      {errors.breedEn && (
+                        <span className="text-red-500 text-xs italic">
+                          {errors.breedEn}
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  <div>
-                    <label htmlFor="image">Image:</label>
-                    <input
-                      type="file"
-                      id="image"
-                      accept="image/*"
-                      onChange={handleUpdateImageChange}
-                    />
+                  <div className="mb-4">
+                    <label
+                      className="block text-gray-700 font-medium mb-2"
+                      htmlFor="image"
+                    >
+                      Image:
+                    </label>
+                    <div className="relative border-dashed border-2 border-gray-400 rounded-lg h-44">
+                      <input
+                        className="h-full w-full opacity-0"
+                        id="image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                      {imagePreview ? (
+                        <div className="absolute top-0 left-0 h-full w-full">
+                          <img
+                            src={imagePreview}
+                            alt="Selected image preview"
+                            className="h-full w-full object-cover rounded-lg"
+                          />
+                          <div className="absolute bottom-0 left-0 right-0 p-4 bg-opacity-75 bg-gray-700 rounded-b-lg">
+                            <button
+                              className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg"
+                              onClick={() => setImagePreview(null)}
+                            >
+                              Cancel or Change
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                          <div className="flex flex-col items-center justify-center">
+                            <span className="block text-gray-400 font-normal">
+                              Select a file or drag and drop it here
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-
                   <div className="mt-4">
                     <button
+                      disabled={hasErrors}
                       type="submit"
-                      className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      className={`
+                      ${hasErrors ? "opacity-50 cursor-not-allowed" : ""}
+                      inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
                     >
                       Update
                     </button>
                     <button
-                      onClick={() => setShowUpdateModal(false)}
+                      onClick={handleUpdateModalClose}
                       type="button"
                       className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-gray-700 bg-gray-300 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 mt-2 sm:mt-0"
                     >
