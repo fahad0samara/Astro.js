@@ -3,123 +3,138 @@
 // export default GetData
 import {useState, useEffect} from "preact/compat";
 const GetData = () => {
-  const [cats, setCats] = useState([]);
-  
-  const [language, setLanguage] = useState("en");
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(4);
-  const [totalPages, setTotalPages] = useState(0);
-  const [deletingCatId, setDeletingCatId] = useState("");
-  const [confirmDelete, setConfirmDelete] = useState(false);
- 
-  const [updatedCatData, setUpdatedCatData] = useState({
-    _id: "",
+const [cats, setCats] = useState<any[]>([]);
 
-    image: "",
-    translations: [
-      {
-        language: "ar",
-        name: "",
-        breed: "",
-     
-      },
-      {
-        language: "en",
-        name: "",
-        breed: "",
-       
-      },
-    ],
-  });
+const [language, setLanguage] = useState<string>("en");
+const [loading, setLoading] = useState<boolean>(true);
+const [page, setPage] = useState<number>(1);
+const [perPage, setPerPage] = useState<number>(4);
+const [totalPages, setTotalPages] = useState<number>(0);
+const [deletingCatId, setDeletingCatId] = useState<string>("");
+const [confirmDelete, setConfirmDelete] = useState<boolean>(false);
 
-  const [showUpdateModal, setShowUpdateModal] = useState(false);
+const [updatedCatData, setUpdatedCatData] = useState<{
+  _id: string;
+  image: string;
+  translations: {
+    language: string;
+    name: string;
+    breed: string;
+    description:string;
+  }[];
+}>({
+  _id: "",
+  image: "",
+  translations: [
+    {
+      language: "ar",
+      name: "",
+      breed: "",
+      description:""
+    },
+    {
+      language: "en",
+      name: "",
+      breed: "",
+         description:""
+    },
+  ],
+});
 
+const [showUpdateModal, setShowUpdateModal] = useState<boolean>(false);
 
-const [errors, setErrors] = useState({
+const [errors, setErrors] = useState<{
+  nameEn: string;
+  breedEn: string;
+  nameAr: string;
+  breedAr: string;
+     description:string
+  image?: File | null;
+
+}>({
   nameEn: "",
   breedEn: "",
   nameAr: "",
   breedAr: "",
-});
-const [hasErrors, setHasErrors] = useState(false);
+      description:""
+ 
 
-const validateArabicInput = (field, value) => {
-  const arabicRegex = /^[\u0600-\u06FF\s]+$/; // Regular expression to match Arabic characters and spaces
+});
+const [hasErrors, setHasErrors] = useState<boolean>(false);
+const validateArabicInput = (field: string, value: string): void => {
+  const arabicRegex: RegExp = /^[\u0600-\u06FF\s]+$/; // Regular expression to match Arabic characters and spaces
   if (!value) {
     setErrors(prevErrors => ({
       ...prevErrors,
       [field]: "This field cannot be empty.",
     }));
-       setHasErrors(true);
+    setHasErrors(true);
   } else if (!arabicRegex.test(value)) {
     setErrors(prevErrors => ({
       ...prevErrors,
       [field]: "Only Arabic characters are allowed.",
     }));
-       setHasErrors(true);
+    setHasErrors(true);
   } else {
-    setErrors(prevErrors => ({ ...prevErrors, [field]: "" }));
-       setHasErrors(false);
+    setErrors(prevErrors => ({...prevErrors, [field]: ""}));
+    setHasErrors(false);
   }
-
 };
 
-const validateEnglishInput = (field, value) => {
-  const englishRegex = /^[A-Za-z\s]+$/; // Regular expression to match English characters and spaces
+const validateEnglishInput = (field: string, value: string): void => {
+  const englishRegex: RegExp = /^[A-Za-z\s]+$/; // Regular expression to match English characters and spaces
   if (!value) {
     setErrors(prevErrors => ({
       ...prevErrors,
       [field]: "This field cannot be empty.",
     }));
-       setHasErrors(true);
+    setHasErrors(true);
   } else if (!englishRegex.test(value)) {
     setErrors(prevErrors => ({
       ...prevErrors,
       [field]: "Only English characters are allowed.",
     }));
-       setHasErrors(true);
+    setHasErrors(true);
   } else {
-    setErrors(prevErrors => ({ ...prevErrors, [field]: "" }));
+    setErrors(prevErrors => ({...prevErrors, [field]: ""}));
     setHasErrors(false);
   }
-  
 };
+
 
 
   useEffect(() => {
     fetchCats();
   }, [page, perPage]);
 
-  const fetchCats = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:1995/cat/api/cats?page=${page}&perPage=${perPage}`
-      );
+const fetchCats = async (): Promise<void> => {
+  try {
+    const response = await fetch(
+      `http://localhost:1995/cat/api/cats?page=${page}&perPage=${perPage}`
+    );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch cats");
-      }
+    
 
-      const data = await response.json();
+    const data = await response.json();
 
-      // Check if the updated cat exists in the fetched data
-      const updatedCatIndex = data.cats.findIndex(
-        cat => cat._id === updatedCatData._id
-      );
+    // Check if the updated cat exists in the fetched data
+    const updatedCatIndex = data.cats.findIndex(
+      (cat: any) => cat._id === updatedCatData._id
+    );
 
-      if (updatedCatIndex !== -1) {
-        // If the updated cat exists, replace it in the fetched data
-        data.cats[updatedCatIndex] = updatedCatData;
-      }
-
-      setCats(data.cats);
-      setTotalPages(data.totalPages);
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch cats:", error);
+    if (updatedCatIndex !== -1) {
+      // If the updated cat exists, replace it in the fetched data
+      data.cats[updatedCatIndex] = updatedCatData;
     }
-  };
+
+    setCats(data.cats)
+    setTotalPages(data.totalPages);
+    setLoading(false);
+  } catch (error) {
+    console.error("Failed to fetch cats:", error);
+  }
+};
+
 
   const handleDeleteCat = async catId => {
     setDeletingCatId(catId);
@@ -146,33 +161,32 @@ const validateEnglishInput = (field, value) => {
     }
   };
 
-  const handleUpdateCat = async catId => {
+ const handleUpdateCat = async (catId: string): Promise<void> => {
+   const catToUpdate = cats.find(cat => cat._id === catId);
+   if (catToUpdate) {
+     setUpdatedCatData({
+       _id: catToUpdate._id,
+       image: catToUpdate.image,
+       
+       translations: [
+         {
+           ...updatedCatData.translations[0],
+           name: catToUpdate.translations[0].name,
+           breed: catToUpdate.translations[0].breed,
+           description: catToUpdate.translations[0].description,
+         },
+         {
+           ...updatedCatData.translations[1],
+           name: catToUpdate.translations[1].name,
+           breed: catToUpdate.translations[1].breed,
+           description: catToUpdate.translations[1].description,
+         },
+       ],
+     });
+   }
+   setShowUpdateModal(true);
+ };
 
-
-
-    const catToUpdate = cats.find(cat => cat._id === catId);
-    if (catToUpdate) {
-      setUpdatedCatData({
-        _id: catToUpdate._id,
-        image: catToUpdate.image,
-        translations: [
-          {
-            ...updatedCatData.translations[0],
-            name: catToUpdate.translations[0].name,
-            breed: catToUpdate.translations[0].breed,
-            description: catToUpdate.translations[0].description,
-          },
-          {
-            ...updatedCatData.translations[1],
-            name: catToUpdate.translations[1].name,
-            breed: catToUpdate.translations[1].breed,
-            description: catToUpdate.translations[1].description,
-          },
-        ],
-      });
-    }
-    setShowUpdateModal(true);
-  };
 
     const handleBlur = (field, value) => {
       if (field === "nameEn") {
@@ -184,6 +198,7 @@ const validateEnglishInput = (field, value) => {
       } else if (field === "breedAr") {
         validateArabicInput(field, value);
       }
+      updateErrorState({ ...errors });
     };
 
 const submitUpdateCat = async event => {
@@ -194,6 +209,7 @@ const submitUpdateCat = async event => {
   validateEnglishInput("nameEn", updatedCatData.translations[1].name);
   validateArabicInput("breedAr", updatedCatData.translations[0].breed);
   validateEnglishInput("breedEn", updatedCatData.translations[1].breed);
+
 
   // Check if there are any errors
   const hasErrors = Object.values(errors).some(error => error !== "");
@@ -301,6 +317,8 @@ const submitUpdateCat = async event => {
             language: "ar",
             name: "",
             breed: "",
+
+
           },
           {
             language: "en",
@@ -489,50 +507,56 @@ const submitUpdateCat = async event => {
                 </h2>
                 <form onSubmit={submitUpdateCat}>
                   <div className="mb-4 flex flex-col sm:flex-row sm:justify-between">
-                    <div className="mb-4 ">
-                      <label htmlFor="name" className="block text-gray-700">
-                        Name (Arabic):
-                      </label>
-                      <input
-                        type="text"
-                        name="name"
-                        value={updatedCatData.translations[0].name}
-                        onChange={handleUpdateInputChange}
-                        data-language="ar"
-                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
-                          errors.nameAr ? "border-red-500" : "border-gray-200"
-                        } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-                        onBlur={e => handleBlur("nameAr", e.target.value)}
-                      />
-                      {errors.nameAr && (
-                        <span className="text-red-500 text-xs italic">
-                          {errors.nameAr}
-                        </span>
-                      )}
+                  
+                      <div className="w-full sm:w-1/2 pr-0 sm:pr-2">
+                        <label htmlFor="name" className="block text-gray-700">
+                          Name (Arabic):
+                        </label>
+                        <input
+                          type="text"
+                          name="name"
+                          value={updatedCatData.translations[0].name}
+                          onChange={handleUpdateInputChange}
+                          data-language="ar"
+                          className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                            errors.nameAr ? "border-red-500" : "border-gray-200"
+                          } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+                          onBlur={e => handleBlur("nameAr", e.target.value)}
+                        />
+                        {errors.nameAr && (
+                          <span className="text-red-500 text-xs italic">
+                            {errors.nameAr}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="w-full sm:w-1/2 pl-0 sm:pl-2 mt-4 sm:mt-0">
+                        <label htmlFor="breed" className="block text-gray-700">
+                          Breed (Arabic):
+                        </label>
+                        <input
+                          type="text"
+                          name="breed"
+                          value={updatedCatData.translations[0].breed}
+                          onChange={handleUpdateInputChange}
+                          data-language="ar"
+                          className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                            errors.breedAr
+                              ? "border-red-500"
+                              : "border-gray-200"
+                          } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+                          onBlur={e => handleBlur("breedAr", e.target.value)}
+                        />
+                        {errors.breedAr && (
+                          <span className="text-red-500 text-xs italic">
+                            {errors.breedAr}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <div></div>
-                      <label htmlFor="breed" className="block text-gray-700">
-                        Breed (Arabic):
-                      </label>
-                      <input
-                        type="text"
-                        name="breed"
-                        value={updatedCatData.translations[0].breed}
-                        onChange={handleUpdateInputChange}
-                        data-language="ar"
-                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
-                          errors.breedAr ? "border-red-500" : "border-gray-200"
-                        } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-                        onBlur={e => handleBlur("breedAr", e.target.value)}
-                      />
-                      {errors.breedAr && (
-                        <span className="text-red-500 text-xs italic">
-                          {errors.breedAr}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                   
+                 
+             
 
                   <div className="flex flex-col sm:flex-row sm:justify-between mb-4">
                     <div className="w-full sm:w-1/2 pr-0 sm:pr-2">
