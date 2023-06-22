@@ -46,28 +46,8 @@ const GetData = () => {
 
   const [showUpdateModal, setShowUpdateModal] = useState<boolean>(false);
 
-  const [errors, setErrors] = useState<{
-    minWeight: Number;
-    maxWeight: Number;
-    nameEn: string;
+  const [errors, setErrors] = useState({});
 
-    breedEn: string;
-    descriptionEn: string;
-    nameAr: string;
-    breedAr: string;
-    descriptionAr: string;
-
-    image?: File | null;
-  }>({
-    minWeight: 0,
-    maxWeight: 0,
-    nameEn: "",
-    breedEn: "",
-    nameAr: "",
-    breedAr: "",
-    descriptionEn: "",
-    descriptionAr: "",
-  });
   const [hasErrors, setHasErrors] = useState<boolean>(false);
   const validateArabicInput = (field: string, value: string): void => {
     const arabicRegex: RegExp = /^[\u0600-\u06FF\s]+$/; // Regular expression to match Arabic characters and spaces
@@ -103,6 +83,9 @@ const GetData = () => {
         [field]: "Only English characters are allowed.",
       }));
       setHasErrors(true);
+    } else {
+      setErrors(prevErrors => ({...prevErrors, [field]: ""}));
+      setHasErrors(false);
     }
   };
 
@@ -117,9 +100,6 @@ const GetData = () => {
       );
 
       const data = await response.json();
-      console.log("====================================");
-      console.log(data);
-      console.log("====================================");
 
       // Check if the updated cat exists in the fetched data
       const updatedCatIndex = data.cats.findIndex(
@@ -194,6 +174,26 @@ const GetData = () => {
     setShowUpdateModal(true);
   };
 
+  const validateWeight = (field, value) => {
+    if (!value) {
+      setHasErrors(true);
+
+      return "This field cannot be empty.";
+    } else if (isNaN(value)) {
+      setHasErrors(true);
+      return "Only numeric values are allowed.";
+    } else if (parseFloat(value) <= 0) {
+      setHasErrors(true);
+      return `
+          The ${
+            field === "minWeight" ? "minimum" : "maximum"
+          } weight must be greater than 0.
+        `;
+    }
+    setHasErrors(false);
+    return "";
+  };
+
   const handleBlur = (field: string, value: string) => {
     if (field === "nameEn") {
       validateEnglishInput(field, value);
@@ -207,6 +207,9 @@ const GetData = () => {
       validateArabicInput(field, value);
     } else if (field === "descriptionEn") {
       validateEnglishInput(field, value);
+    } else if (field === "minWeight" || field === "maxWeight") {
+      const error = validateWeight(field, value);
+      setErrors(prevErrors => ({...prevErrors, [field]: error}));
     } else {
       setErrors(prevErrors => ({...prevErrors, [field]: ""}));
       setHasErrors(false);
@@ -216,20 +219,10 @@ const GetData = () => {
   const submitUpdateCat = async (event: {preventDefault: () => void}) => {
     event.preventDefault();
 
-    // Validate the input fields
-    validateArabicInput("nameAr", updatedCatData.translations[0].name);
-    validateEnglishInput("nameEn", updatedCatData.translations[1].name);
-    validateArabicInput("breedAr", updatedCatData.translations[0].breed);
-    validateEnglishInput("breedEn", updatedCatData.translations[1].breed);
-    validateArabicInput("descriptionAr",updatedCatData.translations[0].description);
-    validateEnglishInput("descriptionEn",
-updatedCatData.translations[1].description
-    );
-
     // Check if there are any errors
-    const hasErrors = Object.values(errors).some(error => error !== "");
-    if (hasErrors) {
-      return; // Don't submit if there are errors
+    if (Object.values(errors).some(error => error)) {
+      setHasErrors(true);
+      return;
     }
 
     try {
@@ -531,7 +524,14 @@ updatedCatData.translations[1].description
                         defaultValue={updatedCatData.minWeight}
                         onChange={handleUpdateInputChange}
                         className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                        onBlur={e => handleBlur("minWeight", e.target.value)}
                       />
+
+                      {errors.minWeight && (
+                        <span className="text-red-500 text-xs italic">
+                          {errors.minWeight}
+                        </span>
+                      )}
                     </div>
 
                     <div className="w-full sm:w-1/2 pl-0 sm:pl-2 mt-4 sm:mt-0">
@@ -543,7 +543,13 @@ updatedCatData.translations[1].description
                         defaultValue={updatedCatData.maxWeight}
                         onChange={handleUpdateInputChange}
                         className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
+                        onBlur={e => handleBlur("maxWeight", e.target.value)}
                       />
+                      {errors.maxWeight && (
+                        <span className="text-red-500 text-xs italic">
+                          {errors.maxWeight}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="mb-4 flex flex-col sm:flex-row sm:justify-between">
@@ -724,7 +730,6 @@ updatedCatData.translations[1].description
                   </div>
                   <div className="mt-4 space-x-3">
                     <button
-                  
                       disabled={hasErrors}
                       type="submit"
                       className={`

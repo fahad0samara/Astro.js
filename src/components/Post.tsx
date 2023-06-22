@@ -283,6 +283,51 @@ const CreateCat = () => {
     setImage(file);
   };
 
+  const validateWeight = (field, value) => {
+    if (!value) {
+      return "This field cannot be empty.";
+    } else if (isNaN(value)) {
+      return "Only numeric values are allowed.";
+    } else if (parseFloat(value) <= 0) {
+      return "The weight must be greater than zero.";
+    }
+    return "";
+  };
+
+
+
+
+
+  const handleBlur = (field: string, value: string) => {
+    if (field === "englishName") {
+      validateEnglishInput(field, value);
+    } else if (field === "englishBreed") {
+      validateEnglishInput(field, value);
+    } else if (field === "arabicName") {
+      validateArabicInput(field, value);
+    } else if (field === "arabicBreed") {
+      validateArabicInput(field, value);
+    } else if (field === "arabicDescription") {
+      validateArabicInput(field, value);
+    } else if (field === "englishDescription") {
+      validateEnglishInput(field, value);
+    } else if (
+      field === "minWeight" ||
+      field === "maxWeight"
+    ) {
+      const error = validateWeight(field, value);
+      setErrors(prevErrors => ({ ...prevErrors, [field]: error }));
+    }
+  
+    
+      
+
+      
+    else {
+      setErrors(prevErrors => ({...prevErrors, [field]: ""}));
+    }
+  };
+
 const handleSubmit = async event => {
   event.preventDefault();
 
@@ -295,6 +340,10 @@ const handleSubmit = async event => {
   validateArabicInput("arabicName", arabicName);
   validateArabicInput("arabicBreed", arabicBreed);
   validateArabicInput("arabicDescription", arabicDescription);
+
+  // Validation for weight fields
+validateWeight("minWeight", minWeight);
+ validateWeight("maxWeight", maxWeight);
 
   // Check if there are any errors
   const hasErrors = Object.values(errors).some(error => error !== "");
@@ -341,9 +390,7 @@ const handleSubmit = async event => {
     setEnglishName("");
     setEnglishBreed("");
     setEnglishDescription("");
-    console.log("====================================");
-    console.log("Cat created successfully:", data);
-    console.log("====================================");
+    setErrors({});
   } catch (error) {
     console.error("Failed to create cat:", error);
   }
@@ -370,7 +417,14 @@ const handleSubmit = async event => {
             id="minWeight"
             value={minWeight}
             onChange={e => setMinWeight(e.target.value)}
+            onBlur={e => handleBlur("minWeight", e.target.value)}
+
           />
+          {errors.minWeight && (
+            <span className="text-red-500 text-xs italic">
+              {errors.minWeight}
+            </span>
+          )}
         </div>
         <div>
           <label htmlFor="maxWeight">Maximum Weight:</label>
@@ -379,7 +433,18 @@ const handleSubmit = async event => {
             id="maxWeight"
             value={maxWeight}
             onChange={e => setMaxWeight(e.target.value)}
+            onBlur={
+              e => handleBlur("maxWeight", e.target.value)
+            }
+
+
+
           />
+          {errors.maxWeight && (
+            <span className="text-red-500 text-xs italic">
+              {errors.maxWeight}
+            </span>
+          )}
         </div>
         <div>
           <h2>Arabic Translation:</h2>
@@ -390,10 +455,15 @@ const handleSubmit = async event => {
               id="arabicName"
               value={arabicName}
               onChange={e => setArabicName(e.target.value)}
-              onBlur={e => validateArabicInput("arabicName", e.target.value)}
+              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                errors.nameAr ? "border-red-500" : "border-gray-200"
+              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+              onBlur={e => handleBlur("arabicName", e.target.value)}
             />
             {errors.arabicName && (
-              <p className="text-red-500 text-sm">{errors.arabicName}</p>
+              <span className="text-red-500 text-xs italic">
+                {errors.arabicName}
+              </span>
             )}
           </div>
           <div>
@@ -403,10 +473,15 @@ const handleSubmit = async event => {
               id="arabicBreed"
               value={arabicBreed}
               onChange={e => setArabicBreed(e.target.value)}
-              onBlur={e => validateArabicInput("arabicBreed", e.target.value)}
+              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                errors.arabicBreed ? "border-red-500" : "border-gray-200"
+              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+              onBlur={e => handleBlur("arabicBreed", e.target.value)}
             />
             {errors.arabicBreed && (
-              <p className="text-red-500 text-sm">{errors.arabicBreed}</p>
+              <span className="text-red-500 text-xs italic">
+                {errors.arabicBreed}
+              </span>
             )}
           </div>
           <div>
@@ -415,12 +490,15 @@ const handleSubmit = async event => {
               id="arabicDescription"
               value={arabicDescription}
               onChange={e => setArabicDescription(e.target.value)}
-              onBlur={e =>
-                validateArabicInput("arabicDescription", e.target.value)
-              }
+              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                errors.arabicDescription ? "border-red-500" : "border-gray-200"
+              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+              onBlur={e => handleBlur("arabicDescription", e.target.value)}
             />
             {errors.arabicDescription && (
-              <p className="text-red-500 text-sm">{errors.arabicDescription}</p>
+              <span className="text-red-500 text-xs italic">
+                {errors.arabicDescription}
+              </span>
             )}
           </div>
         </div>
@@ -433,10 +511,15 @@ const handleSubmit = async event => {
               id="englishName"
               value={englishName}
               onChange={e => setEnglishName(e.target.value)}
-              onBlur={e => validateEnglishInput("englishName", e.target.value)}
+              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                errors.englishName ? "border-red-500" : "border-gray-200"
+              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+              onBlur={e => handleBlur("englishName", e.target.value)}
             />
             {errors.englishName && (
-              <p className="text-red-500 text-sm">{errors.englishName}</p>
+              <span className="text-red-500 text-xs italic">
+                {errors.englishName}
+              </span>
             )}
           </div>
           <div>
@@ -446,10 +529,15 @@ const handleSubmit = async event => {
               id="englishBreed"
               value={englishBreed}
               onChange={e => setEnglishBreed(e.target.value)}
-              onBlur={e => validateEnglishInput("englishBreed", e.target.value)}
+              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                errors.englishBreed ? "border-red-500" : "border-gray-200"
+              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+              onBlur={e => handleBlur("englishBreed", e.target.value)}
             />
             {errors.englishBreed && (
-              <p className="text-red-500 text-sm">{errors.englishBreed}</p>
+              <span className="text-red-500 text-xs italic">
+                {errors.englishBreed}
+              </span>
             )}
           </div>
           <div>
@@ -458,14 +546,15 @@ const handleSubmit = async event => {
               id="englishDescription"
               value={englishDescription}
               onChange={e => setEnglishDescription(e.target.value)}
-              onBlur={e =>
-                validateEnglishInput("englishDescription", e.target.value)
-              }
+              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
+                errors.englishDescription ? "border-red-500" : "border-gray-200"
+              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
+              onBlur={e => handleBlur("englishDescription", e.target.value)}
             />
             {errors.englishDescription && (
-              <p className="text-red-500 text-sm">
+              <span className="text-red-500 text-xs italic">
                 {errors.englishDescription}
-              </p>
+              </span>
             )}
           </div>
         </div>
