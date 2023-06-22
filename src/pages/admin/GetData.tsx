@@ -46,8 +46,10 @@ const GetData = () => {
 
   const [showUpdateModal, setShowUpdateModal] = useState<boolean>(false);
 
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({})
 
+
+  
   const [hasErrors, setHasErrors] = useState<boolean>(false);
   const validateArabicInput = (field: string, value: string): void => {
     const arabicRegex: RegExp = /^[\u0600-\u06FF\s]+$/; // Regular expression to match Arabic characters and spaces
@@ -75,15 +77,19 @@ const GetData = () => {
       setErrors(prevErrors => ({
         ...prevErrors,
         [field]: "This field cannot be empty.",
-      }));
+}));
       setHasErrors(true);
+
+
     } else if (!englishRegex.test(value)) {
       setErrors(prevErrors => ({
         ...prevErrors,
         [field]: "Only English characters are allowed.",
       }));
       setHasErrors(true);
-    } else {
+    }
+      
+    else {
       setErrors(prevErrors => ({...prevErrors, [field]: ""}));
       setHasErrors(false);
     }
@@ -100,6 +106,7 @@ const GetData = () => {
       );
 
       const data = await response.json();
+  
 
       // Check if the updated cat exists in the fetched data
       const updatedCatIndex = data.cats.findIndex(
@@ -174,25 +181,24 @@ const GetData = () => {
     setShowUpdateModal(true);
   };
 
-  const validateWeight = (field, value) => {
-    if (!value) {
-      setHasErrors(true);
+    const validateWeight = (field, value) => {
+      if (!value) {
+        setHasErrors(true);
 
-      return "This field cannot be empty.";
-    } else if (isNaN(value)) {
-      setHasErrors(true);
-      return "Only numeric values are allowed.";
-    } else if (parseFloat(value) <= 0) {
-      setHasErrors(true);
-      return `
-          The ${
-            field === "minWeight" ? "minimum" : "maximum"
-          } weight must be greater than 0.
-        `;
-    }
-    setHasErrors(false);
-    return "";
-  };
+
+        return "This field cannot be empty.";
+      } else if (isNaN(value)) {
+        setHasErrors(true);
+        return "Only numeric values are allowed.";
+      } else if (parseFloat(value) <= 0) {
+        setHasErrors(true);
+        return `
+          The ${field === "minWeight" ? "minimum" : "maximum"} weight must be greater than 0.
+        `
+      }
+      return "";
+
+    };
 
   const handleBlur = (field: string, value: string) => {
     if (field === "nameEn") {
@@ -219,11 +225,16 @@ const GetData = () => {
   const submitUpdateCat = async (event: {preventDefault: () => void}) => {
     event.preventDefault();
 
+ 
+   
+
     // Check if there are any errors
     if (Object.values(errors).some(error => error)) {
       setHasErrors(true);
       return;
     }
+
+  
 
     try {
       setLoading(true);
@@ -245,6 +256,9 @@ const GetData = () => {
 
       if (response.ok) {
         const updatedCat = await response.json();
+        console.log('====================================');
+        console.log(updatedCat);
+        console.log('====================================');
         setUpdatedCatData(prevData => ({
           ...prevData,
           image: updatedCat.cat.image, // Update the image URL
@@ -261,6 +275,7 @@ const GetData = () => {
               : cat
           )
         );
+     
       } else {
         console.log("Failed to update cat:", response.statusText);
       }
@@ -368,7 +383,7 @@ const GetData = () => {
 
   return (
     <div>
-      <div class="mx-auto max-w-screen-lg px-4 py-8 sm:px-8">
+      <div class="mx-auto max-w-screen-2xl px-4 py-8 sm:px-8">
         <div class="flex items-center justify-between pb-6">
           <div>
             <h2 class="font-semibold text-gray-700">Cats list</h2>
@@ -377,7 +392,8 @@ const GetData = () => {
           <div class="flex items-center justify-between">
             <div class="ml-10 space-x-8 lg:ml-40">
               <button class="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:outline-none focus:ring hover:bg-blue-700">
-                CSV
+                add item
+         
               </button>
             </div>
           </div>
@@ -457,7 +473,10 @@ const GetData = () => {
                             </button>
                           )}
 
-                          <button onClick={() => handleUpdateCat(cat._id)}>
+                          <button
+                            className="bg-green-500 ml-3 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                            onClick={() => handleUpdateCat(cat._id)}
+                          >
                             Edit
                           </button>
                         </span>

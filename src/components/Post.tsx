@@ -232,7 +232,7 @@
 
 // export default CatForm;
 
-import  {useState} from "preact/compat";
+import {useState} from "preact/compat";
 
 const CreateCat = () => {
   const [image, setImage] = useState(null);
@@ -244,7 +244,7 @@ const CreateCat = () => {
   const [englishName, setEnglishName] = useState("");
   const [englishBreed, setEnglishBreed] = useState("");
   const [englishDescription, setEnglishDescription] = useState("");
-    const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({});
   const validateEnglishInput = (field, value) => {
     const englishRegex = /^[A-Za-z\s]+$/; // Regular expression to match English characters and spaces
     if (!value) {
@@ -294,10 +294,6 @@ const CreateCat = () => {
     return "";
   };
 
-
-
-
-
   const handleBlur = (field: string, value: string) => {
     if (field === "englishName") {
       validateEnglishInput(field, value);
@@ -311,91 +307,81 @@ const CreateCat = () => {
       validateArabicInput(field, value);
     } else if (field === "englishDescription") {
       validateEnglishInput(field, value);
-    } else if (
-      field === "minWeight" ||
-      field === "maxWeight"
-    ) {
+    } else if (field === "minWeight" || field === "maxWeight") {
       const error = validateWeight(field, value);
-      setErrors(prevErrors => ({ ...prevErrors, [field]: error }));
-    }
-  
-    
-      
-
-      
-    else {
+      setErrors(prevErrors => ({...prevErrors, [field]: error}));
+    } else {
       setErrors(prevErrors => ({...prevErrors, [field]: ""}));
     }
   };
 
-const handleSubmit = async event => {
-  event.preventDefault();
+  const handleSubmit = async event => {
+    event.preventDefault();
 
-  // Validation for English fields
-  validateEnglishInput("englishName", englishName);
-  validateEnglishInput("englishName", englishName);
-  validateEnglishInput("englishDescription", englishDescription);
+    // Validation for English fields
+    validateEnglishInput("englishName", englishName);
+    validateEnglishInput("englishName", englishName);
+    validateEnglishInput("englishDescription", englishDescription);
 
-  // Validation for Arabic fields
-  validateArabicInput("arabicName", arabicName);
-  validateArabicInput("arabicBreed", arabicBreed);
-  validateArabicInput("arabicDescription", arabicDescription);
+    // Validation for Arabic fields
+    validateArabicInput("arabicName", arabicName);
+    validateArabicInput("arabicBreed", arabicBreed);
+    validateArabicInput("arabicDescription", arabicDescription);
 
-  // Validation for weight fields
-validateWeight("minWeight", minWeight);
- validateWeight("maxWeight", maxWeight);
+    // Validation for weight fields
+    validateWeight("minWeight", minWeight);
+    validateWeight("maxWeight", maxWeight);
 
-  // Check if there are any errors
-  const hasErrors = Object.values(errors).some(error => error !== "");
-  if (hasErrors) {
-    return;
-  }
+    // Check if there are any errors
+    const hasErrors = Object.values(errors).some(error => error !== "");
+    if (hasErrors) {
+      return;
+    }
 
-  try {
-    const formData = new FormData();
-    formData.append("image", image);
-    formData.append("min_weight", minWeight);
-    formData.append("max_weight", maxWeight);
+    try {
+      const formData = new FormData();
+      formData.append("image", image);
+      formData.append("min_weight", minWeight);
+      formData.append("max_weight", maxWeight);
 
-    const translations = [
-      {
-        language: "ar",
-        name: arabicName,
-        breed: arabicBreed,
-        description: arabicDescription,
-      },
-      {
-        language: "en",
-        name: englishName,
-        breed: englishBreed,
-        description: englishDescription,
-      },
-    ];
-    formData.append("translations", JSON.stringify(translations));
+      const translations = [
+        {
+          language: "ar",
+          name: arabicName,
+          breed: arabicBreed,
+          description: arabicDescription,
+        },
+        {
+          language: "en",
+          name: englishName,
+          breed: englishBreed,
+          description: englishDescription,
+        },
+      ];
+      formData.append("translations", JSON.stringify(translations));
 
-    const response = await fetch("http://localhost:1995/cat/api/cats", {
-      method: "POST",
-      body: formData,
-    });
+      const response = await fetch("http://localhost:1995/cat/api/cats", {
+        method: "POST",
+        body: formData,
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    // Reset the form fields
-    setImage(null);
-    setMinWeight("");
-    setMaxWeight("");
-    setArabicName("");
-    setArabicBreed("");
-    setArabicDescription("");
-    setEnglishName("");
-    setEnglishBreed("");
-    setEnglishDescription("");
-    setErrors({});
-  } catch (error) {
-    console.error("Failed to create cat:", error);
-  }
-};
-
+      // Reset the form fields
+      setImage(null);
+      setMinWeight("");
+      setMaxWeight("");
+      setArabicName("");
+      setArabicBreed("");
+      setArabicDescription("");
+      setEnglishName("");
+      setEnglishBreed("");
+      setEnglishDescription("");
+      setErrors({});
+    } catch (error) {
+      console.error("Failed to create cat:", error);
+    }
+  };
 
   return (
     <div>
@@ -418,7 +404,6 @@ validateWeight("minWeight", minWeight);
             value={minWeight}
             onChange={e => setMinWeight(e.target.value)}
             onBlur={e => handleBlur("minWeight", e.target.value)}
-
           />
           {errors.minWeight && (
             <span className="text-red-500 text-xs italic">
@@ -433,12 +418,7 @@ validateWeight("minWeight", minWeight);
             id="maxWeight"
             value={maxWeight}
             onChange={e => setMaxWeight(e.target.value)}
-            onBlur={
-              e => handleBlur("maxWeight", e.target.value)
-            }
-
-
-
+            onBlur={e => handleBlur("maxWeight", e.target.value)}
           />
           {errors.maxWeight && (
             <span className="text-red-500 text-xs italic">
