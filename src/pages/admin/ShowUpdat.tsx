@@ -1,17 +1,15 @@
-// export default GetData
+
 import {useState, useEffect} from "preact/compat";
-import CreateCat from "../../components/CreateCat";
-const GetData = () => {
+const ShowUpdat = ({
+  openUpdateModal,
+  closeUpdateModal,
+  selectedCat,
+  onUpdateCatData,
+}) => {
   const [cats, setCats] = useState<any[]>([]);
-
-  const [language, setLanguage] = useState<string>("en");
   const [loading, setLoading] = useState<boolean>(true);
-  const [page, setPage] = useState<number>(1);
-  const [perPage, setPerPage] = useState<number>(4);
-  const [totalPages, setTotalPages] = useState<number>(0);
-  const [deletingCatId, setDeletingCatId] = useState<string>("");
-  const [confirmDelete, setConfirmDelete] = useState<boolean>(false);
 
+  const [showUpdateModal, setShowUpdateModal] = useState<boolean>(false);
   const [updatedCatData, setUpdatedCatData] = useState<{
     _id: string;
     image: string;
@@ -44,8 +42,6 @@ const GetData = () => {
       },
     ],
   });
-
-  const [showUpdateModal, setShowUpdateModal] = useState<boolean>(false);
 
   const [errors, setErrors] = useState({});
 
@@ -88,100 +84,6 @@ const GetData = () => {
       setErrors(prevErrors => ({...prevErrors, [field]: ""}));
       setHasErrors(false);
     }
-  };
-
-  useEffect(() => {
-    fetchCats();
-  }, [page, perPage]);
-
-  const fetchCats = async (): Promise<void> => {
-    try {
-      const response = await fetch(
-        `http://localhost:1995/cat/api/cats?page=${page}&perPage=${perPage}`
-      );
-
-      const data = await response.json();
-
-      // Check if the updated cat exists in the fetched data
-      const updatedCatIndex = data.cats.findIndex(
-        (cat: any) => cat._id === updatedCatData._id
-      );
-
-      if (updatedCatIndex !== -1) {
-        // If the updated cat exists, replace it in the fetched data
-        data.cats[updatedCatIndex] = updatedCatData;
-      }
-
-      setCats(data.cats);
-      setTotalPages(data.totalPages);
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch cats:", error);
-    }
-  };
-
-  // Fetch cat data from the server
-  useEffect(() => {
-    fetchCats();
-  }, []);
-
-  const handleDeleteCat = async (
-    catId: string | ((prevState: string) => string)
-  ) => {
-    setDeletingCatId(catId);
-    setConfirmDelete(true);
-  };
-
-  const confirmDeleteCat = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(
-        `http://localhost:1995/cat/api/cats/${deletingCatId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      setCats(prevCats => prevCats.filter(cat => cat._id !== deletingCatId));
-    } catch (error) {
-      console.log("Failed to delete cat:", error);
-    } finally {
-      setDeletingCatId("");
-      setConfirmDelete(false);
-      setLoading(false);
-    }
-  };
- const [isOpen, setIsOpen] = useState(false);
-
- const handleToggle = () => {
-   setIsOpen(!isOpen);
- };
-  const handleUpdateCat = async (catId: string): Promise<void> => {
-    const catToUpdate = cats.find(cat => cat._id === catId);
-    if (catToUpdate) {
-      setUpdatedCatData({
-        _id: catToUpdate._id,
-        image: catToUpdate.image,
-        minWeight: catToUpdate.min_weight,
-        maxWeight: catToUpdate.max_weight,
-
-        translations: [
-          {
-            ...updatedCatData.translations[0],
-            name: catToUpdate.translations[0].name,
-            breed: catToUpdate.translations[0].breed,
-            description: catToUpdate.translations[0].description,
-          },
-          {
-            ...updatedCatData.translations[1],
-            name: catToUpdate.translations[1].name,
-            breed: catToUpdate.translations[1].breed,
-            description: catToUpdate.translations[1].description,
-          },
-        ],
-      });
-    }
-    setShowUpdateModal(true);
   };
 
   const validateWeight = (field, value) => {
@@ -360,151 +262,39 @@ const GetData = () => {
     });
   };
 
-  const catArray = Array.isArray(cats) ? cats : [cats];
+  const handleUpdateCat = async (catId: string): Promise<void> => {
+    const catToUpdate = cats.find(cat => cat._id === catId);
+    if (catToUpdate) {
+      setUpdatedCatData({
+        _id: catToUpdate._id,
+        image: catToUpdate.image,
+        minWeight: catToUpdate.min_weight,
+        maxWeight: catToUpdate.max_weight,
 
-  const handlePrevPage = () => {
-    if (page > 1) {
-      setPage(prevPage => prevPage - 1);
+        translations: [
+          {
+            ...updatedCatData.translations[0],
+            name: catToUpdate.translations[0].name,
+            breed: catToUpdate.translations[0].breed,
+            description: catToUpdate.translations[0].description,
+          },
+          {
+            ...updatedCatData.translations[1],
+            name: catToUpdate.translations[1].name,
+            breed: catToUpdate.translations[1].breed,
+            description: catToUpdate.translations[1].description,
+          },
+        ],
+      });
+        
     }
+      setShowUpdateModal(true);
+         onUpdateCatData(updatedCatData);
   };
-
-  const handleNextPage = () => {
-    if (page < totalPages) {
-      setPage(prevPage => prevPage + 1);
-    }
-  };
-
-  if (loading) {
-    return <p>Loading cats...</p>;
-  }
 
   return (
     <div>
-      <div class="mx-auto max-w-screen-2xl px-4 py-8 sm:px-8">
-        <div class="flex items-center justify-between pb-6">
-          <div>
-            <h2 class="font-semibold text-gray-700">Cats list</h2>
-            <span class="text-xs text-gray-500">{cats.length} cats</span>
-          </div>
-          <div class="flex items-center justify-between">
-            <div class="ml-10 space-x-8 lg:ml-40">
-              <CreateCat />
-            </div>
-          </div>
-        </div>
-        <div class="overflow-y-hidden rounded-lg border">
-          <div class="overflow-x-auto">
-            <table class="w-full">
-              <thead>
-                <tr class="bg-blue-600 text-left text-xs font-semibold uppercase tracking-widest text-white">
-                  <th class="px-5 py-3">ID</th>
-                  <th class="px-5 py-3">Full Name</th>
-                  <th class="px-5 py-3"> breed</th>
-                  <th class="px-5 py-3">Created at</th>
-                  <th class="px-5 py-3">Status</th>
-                </tr>
-              </thead>
-              <tbody class="text-gray-500">
-                {catArray.map(cat => {
-                  const translation = cat.translations.find(
-                    t => t.language === language
-                  );
-                  return (
-                    <tr key={cat.id}>
-                      <td class="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                        <p class="whitespace-no-wrap">{cat.id}</p>
-                      </td>
-                      <td class="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                        <div class="flex items-center">
-                          <div class="h-10 w-10 flex-shrink-0">
-                            <img
-                              class="h-full w-full rounded-full"
-                              src={cat.image}
-                              alt=""
-                            />
-                          </div>
-                          <div class="ml-3">
-                            <p class="whitespace-no-wrap">
-                              {" "}
-                              {translation?.name}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                        <p class="whitespace-no-wrap"> {translation?.breed}</p>
-                      </td>
-                      <td class="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                        <p class="whitespace-no-wrap">{cat.createdAt}</p>
-                      </td>
-
-                      <td class="border-b border-gray-200 bg-white px-5 py-5 text-sm">
-                        <span
-                          class={`rounded-full bg-${cat.statusColor} px-3 py-1 text-xs font-semibold text-${cat.statusColorText}`}
-                        >
-                          {confirmDelete && deletingCatId === cat._id ? (
-                            <div>
-                              Are you sure you want to delete this cat?
-                              <button
-                                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                                onClick={confirmDeleteCat}
-                              >
-                                Yes
-                              </button>
-                              <button
-                                className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-                                onClick={() => setConfirmDelete(false)}
-                              >
-                                No
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                              onClick={() => handleDeleteCat(cat._id)}
-                            >
-                              Delete
-                            </button>
-                          )}
-
-                          <button
-                            className="bg-green-500 ml-3 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                            onClick={() => handleUpdateCat(cat._id)}
-                          >
-                            Edit
-                          </button>
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <div class="flex flex-col items-center border-t bg-white px-5 py-5 sm:flex-row sm:justify-between">
-            <span class="text-xs text-gray-600 sm:text-sm">
-              Showing {page} of {totalPages} Entries{" "}
-            </span>
-            <div class="mt-2 inline-flex sm:mt-0">
-              <button
-                onClick={handlePrevPage}
-                disabled={page === 1}
-                class="mr-2 h-12 w-12 rounded-full border text-sm font-semibold text-gray-600 transition duration-150 hover:bg-gray-100"
-              >
-                Prev
-              </button>
-              <button
-                onClick={handleNextPage}
-                disabled={page === totalPages}
-                class="h-12 w-12 rounded-full border text-sm font-semibold text-gray-600 transition duration-150 hover:bg-gray-100"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <button onClick={() => handleUpdateCat(cats._id)}>Update Cat</button>
       {showUpdateModal && (
         <div className="fixed z-10 inset-0 overflow-y-auto ">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
@@ -783,224 +573,8 @@ const GetData = () => {
           </div>
         </div>
       )}
-
-      {isOpen && (
-        <div className="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
-          <div className="relative w-full max-w-lg max-h-full">
-            <div className="relative bg-white rounded-lg">
-              <div className="flex items-center justify-between p-5 border-b rounded-t dark:border-gray-600">
-                <h3 className="text-xl font-medium text-gray-900 dark:text-white">
-                  Create Cat
-                </h3>
-                <button
-                  type="button"
-                  className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                  onClick={handleToggle}
-                >
-                  <svg
-                    aria-hidden="true"
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    ></path>
-                  </svg>
-                  <span className="sr-only">Close modal</span>
-                </button>
-              </div>
-              <div className="p-6 space-y-6">
-                <form onSubmit={handleSubmit}>
-                  <div>
-                    <label htmlFor="image">Image:</label>
-                    <input
-                      type="file"
-                      id="image"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="minWeight">Minimum Weight:</label>
-                    <input
-                      type="number"
-                      id="minWeight"
-                      value={minWeight}
-                      onChange={e => setMinWeight(e.target.value)}
-                      onBlur={e => handleBlur("minWeight", e.target.value)}
-                      className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${errors.minWeight ? "border-red-500" : "border-gray-200"
-                        } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-                    />
-                    {errors.minWeight && (
-                      <span className="text-red-500 text-xs italic">
-                        {errors.minWeight}
-                      </span>
-                    )}
-                  </div>
-                  <div>
-                    <label htmlFor="maxWeight">Maximum Weight:</label>
-                    <input
-                      type="number"
-                      id="maxWeight"
-                      value={maxWeight}
-                      onChange={e => setMaxWeight(e.target.value)}
-                      onBlur={e => handleBlur("maxWeight", e.target.value)}
-                      className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${errors.maxWeight ? "border-red-500" : "border-gray-200"
-                        } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-                    />
-                    {errors.maxWeight && (
-                      <span className="text-red-500 text-xs italic">
-                        {errors.maxWeight}
-                      </span>
-                    )}
-                  </div>
-                  <div>
-                    <h2>Arabic Translation:</h2>
-                    <div>
-                      <label htmlFor="arabicName">Name:</label>
-                      <input
-                        type="text"
-                        id="arabicName"
-                        value={arabicName}
-                        onChange={e => setArabicName(e.target.value)}
-                        onBlur={e => handleBlur("arabicName", e.target.value)}
-                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${errors.arabicName
-                            ? "border-red-500"
-                            : "border-gray-200"
-                          } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-                      />
-                      {errors.arabicName && (
-                        <span className="text-red-500 text-xs italic">
-                          {errors.arabicName}
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <label htmlFor="arabicBreed">Breed:</label>
-                      <input
-                        type="text"
-                        id="arabicBreed"
-                        value={arabicBreed}
-                        onChange={e => setArabicBreed(e.target.value)}
-                        onBlur={e => handleBlur("arabicBreed", e.target.value)}
-                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${errors.arabicBreed
-                            ? "border-red-500"
-                            : "border-gray-200"
-                          } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-                      />
-                      {errors.arabicBreed && (
-                        <span className="text-red-500 text-xs italic">
-                          {errors.arabicBreed}
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <label htmlFor="arabicDescription">Description:</label>
-                      <textarea
-                        id="arabicDescription"
-                        value={arabicDescription}
-                        onChange={e => setArabicDescription(e.target.value)}
-                        onBlur={e =>
-                          handleBlur("arabicDescription", e.target.value)
-                        }
-                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${errors.arabicDescription
-                            ? "border-red-500"
-                            : "border-gray-200"
-                          } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-                      />
-                      {errors.arabicDescription && (
-                        <span className="text-red-500 text-xs italic">
-                          {errors.arabicDescription}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <h2>English Translation:</h2>
-                    <div>
-                      <label htmlFor="englishName">Name:</label>
-                      <input
-                        type="text"
-                        id="englishName"
-                        value={englishName}
-                        onChange={e => setEnglishName(e.target.value)}
-                        onBlur={e => handleBlur("englishName", e.target.value)}
-                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${errors.englishName
-                            ? "border-red-500"
-                            : "border-gray-200"
-                          } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-                      />
-                      {errors.englishName && (
-                        <span className="text-red-500 text-xs italic">
-                          {errors.englishName}
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <label htmlFor="englishBreed">Breed:</label>
-                      <input
-                        type="text"
-                        id="englishBreed"
-                        value={englishBreed}
-                        onChange={e => setEnglishBreed(e.target.value)}
-                        onBlur={e => handleBlur("englishBreed", e.target.value)}
-                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${errors.englishBreed
-                            ? "border-red-500"
-                            : "border-gray-200"
-                          } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-                      />
-                      {errors.englishBreed && (
-                        <span className="text-red-500 text-xs italic">
-                          {errors.englishBreed}
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <label htmlFor="englishDescription">Description:</label>
-                      <textarea
-                        id="englishDescription"
-                        value={englishDescription}
-                        onChange={e => setEnglishDescription(e.target.value)}
-                        onBlur={e =>
-                          handleBlur("englishDescription", e.target.value)
-                        }
-                        className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${errors.englishDescription
-                            ? "border-red-500"
-                            : "border-gray-200"
-                          } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-                      />
-                      {errors.englishDescription && (
-                        <span className="text-red-500 text-xs italic">
-                          {errors.englishDescription}
-                        </span>
-                      )}
-                   
-                    </div>
-                  </div>
-           
-                </form>
-              </div>
-            </div>
-          </div>
-          
-                    
-              
-                      
-                
-              
-            
-          
-        
-        </div>
-      )
-      }
     </div>
-      
   );
 };
 
-export default GetData;
+export default ShowUpdat;

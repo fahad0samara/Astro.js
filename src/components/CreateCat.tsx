@@ -234,7 +234,7 @@
 
 import {useState} from "preact/compat";
 
-const CreateCat = () => {
+const CreateCat = ({onCreate}) => {
   const [image, setImage] = useState(null);
   const [minWeight, setMinWeight] = useState("");
   const [maxWeight, setMaxWeight] = useState("");
@@ -382,164 +382,34 @@ const CreateCat = () => {
       console.error("Failed to create cat:", error);
     }
   };
+  const [isOpen, setIsOpen] = useState(false);
 
+  const handleToggle = () => {
+    setIsOpen(!isOpen);
+  };
   return (
     <div>
-      <h1>Create Cat</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="image">Image:</label>
-          <input
-            type="file"
-            id="image"
-            accept="image/*"
-            onChange={handleImageUpload}
-          />
-        </div>
-        <div>
-          <label htmlFor="minWeight">Minimum Weight:</label>
-          <input
-            type="number"
-            id="minWeight"
-            value={minWeight}
-            onChange={e => setMinWeight(e.target.value)}
-            onBlur={e => handleBlur("minWeight", e.target.value)}
-          />
-          {errors.minWeight && (
-            <span className="text-red-500 text-xs italic">
-              {errors.minWeight}
-            </span>
-          )}
-        </div>
-        <div>
-          <label htmlFor="maxWeight">Maximum Weight:</label>
-          <input
-            type="number"
-            id="maxWeight"
-            value={maxWeight}
-            onChange={e => setMaxWeight(e.target.value)}
-            onBlur={e => handleBlur("maxWeight", e.target.value)}
-          />
-          {errors.maxWeight && (
-            <span className="text-red-500 text-xs italic">
-              {errors.maxWeight}
-            </span>
-          )}
-        </div>
-        <div>
-          <h2>Arabic Translation:</h2>
-          <div>
-            <label htmlFor="arabicName">Name:</label>
-            <input
-              type="text"
-              id="arabicName"
-              value={arabicName}
-              onChange={e => setArabicName(e.target.value)}
-              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
-                errors.nameAr ? "border-red-500" : "border-gray-200"
-              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-              onBlur={e => handleBlur("arabicName", e.target.value)}
-            />
-            {errors.arabicName && (
-              <span className="text-red-500 text-xs italic">
-                {errors.arabicName}
-              </span>
-            )}
-          </div>
-          <div>
-            <label htmlFor="arabicBreed">Breed:</label>
-            <input
-              type="text"
-              id="arabicBreed"
-              value={arabicBreed}
-              onChange={e => setArabicBreed(e.target.value)}
-              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
-                errors.arabicBreed ? "border-red-500" : "border-gray-200"
-              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-              onBlur={e => handleBlur("arabicBreed", e.target.value)}
-            />
-            {errors.arabicBreed && (
-              <span className="text-red-500 text-xs italic">
-                {errors.arabicBreed}
-              </span>
-            )}
-          </div>
-          <div>
-            <label htmlFor="arabicDescription">Description:</label>
-            <textarea
-              id="arabicDescription"
-              value={arabicDescription}
-              onChange={e => setArabicDescription(e.target.value)}
-              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
-                errors.arabicDescription ? "border-red-500" : "border-gray-200"
-              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-              onBlur={e => handleBlur("arabicDescription", e.target.value)}
-            />
-            {errors.arabicDescription && (
-              <span className="text-red-500 text-xs italic">
-                {errors.arabicDescription}
-              </span>
-            )}
+      <button
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        onClick={handleToggle}
+      >
+        Add New Pet
+      </button>
+      
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  >
+                    Create Cat
+                  </button>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
-        <div>
-          <h2>English Translation:</h2>
-          <div>
-            <label htmlFor="englishName">Name:</label>
-            <input
-              type="text"
-              id="englishName"
-              value={englishName}
-              onChange={e => setEnglishName(e.target.value)}
-              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
-                errors.englishName ? "border-red-500" : "border-gray-200"
-              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-              onBlur={e => handleBlur("englishName", e.target.value)}
-            />
-            {errors.englishName && (
-              <span className="text-red-500 text-xs italic">
-                {errors.englishName}
-              </span>
-            )}
-          </div>
-          <div>
-            <label htmlFor="englishBreed">Breed:</label>
-            <input
-              type="text"
-              id="englishBreed"
-              value={englishBreed}
-              onChange={e => setEnglishBreed(e.target.value)}
-              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
-                errors.englishBreed ? "border-red-500" : "border-gray-200"
-              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-              onBlur={e => handleBlur("englishBreed", e.target.value)}
-            />
-            {errors.englishBreed && (
-              <span className="text-red-500 text-xs italic">
-                {errors.englishBreed}
-              </span>
-            )}
-          </div>
-          <div>
-            <label htmlFor="englishDescription">Description:</label>
-            <textarea
-              id="englishDescription"
-              value={englishDescription}
-              onChange={e => setEnglishDescription(e.target.value)}
-              className={`appearance-none block w-full bg-gray-200 text-gray-700 border ${
-                errors.englishDescription ? "border-red-500" : "border-gray-200"
-              } rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500`}
-              onBlur={e => handleBlur("englishDescription", e.target.value)}
-            />
-            {errors.englishDescription && (
-              <span className="text-red-500 text-xs italic">
-                {errors.englishDescription}
-              </span>
-            )}
-          </div>
-        </div>
-        <button type="submit">Create Cat</button>
-      </form>
+      )}
     </div>
   );
 };
